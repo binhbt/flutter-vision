@@ -8,6 +8,7 @@ import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:uuid/uuid.dart';
+import 'package:toast/toast.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -126,7 +127,8 @@ class _CameraScreenState extends State<CameraScreen> {
   Future<void> detectLabels() async {
     final FirebaseVisionImage visionImage = FirebaseVisionImage.fromFilePath(imagePath);
     final LabelDetector labelDetector = FirebaseVision.instance.labelDetector();
-    final List<Label> labels = await labelDetector.detectInImage(visionImage);
+
+/*    final List<Label> labels = await labelDetector.detectInImage(visionImage);
 
     List<String> labelTexts = new List();
     for (Label label in labels) {
@@ -143,7 +145,28 @@ class _CameraScreenState extends State<CameraScreen> {
       MaterialPageRoute(builder: (context) => ItemsListScreen()),
     );
 
-    await _addItem(downloadURL, labelTexts);
+    await _addItem(downloadURL, labelTexts);*/
+
+    final TextRecognizer textRecognizer = FirebaseVision.instance.textRecognizer();
+    final VisionText visionText = await textRecognizer.processImage(visionImage);
+    String text = visionText.text;
+    print(text);
+    Toast.show("Toast plugin app "+text, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+
+    for (TextBlock block in visionText.blocks) {
+//      final Rect boundingBox = block.boundingBox;
+//      final List<Offset> cornerPoints = block.cornerPoints;
+      final String text = block.text;
+      final List<RecognizedLanguage> languages = block.recognizedLanguages;
+
+      for (TextLine line in block.lines) {
+        // Same getters as TextBlock
+        for (TextElement element in line.elements) {
+          // Same getters as TextBlock
+        }
+      }
+    }
+
   }
 
   Future<void> _addItem(String downloadURL, List<String> labels) async {
